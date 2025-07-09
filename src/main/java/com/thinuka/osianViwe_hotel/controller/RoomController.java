@@ -28,7 +28,7 @@ import java.util.List;
 
 
 
-@CrossOrigin("http://localhost:5173")
+@CrossOrigin("http://localhost:5174")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/rooms")
@@ -39,7 +39,7 @@ public class RoomController {
 
     private final BookingService bookingService;
 
-   /* @Configuration
+   @Configuration
     public class WebConfig implements WebMvcConfigurer {
         @Override
         public void addCorsMappings(CorsRegistry registry) {
@@ -48,7 +48,7 @@ public class RoomController {
                     .allowedMethods("GET", "POST", "PUT", "DELETE");
 
         }
-    }*/
+    }
 
     @PostMapping("/add/new-room")
     public ResponseEntity<RoomResponse> addNewRoom(
@@ -67,6 +67,8 @@ public class RoomController {
         return roomService.getAllRoomTypes();
     }
 
+
+    @GetMapping("/all-rooms")
     public ResponseEntity<List<RoomResponse>> getAllRooms() throws SQLException {
         List<Room> rooms = roomService.getAllRooms();
         List<RoomResponse> roomResponses = new ArrayList<>();
@@ -83,11 +85,11 @@ public class RoomController {
     }
     private RoomResponse getRoomResponse(Room room){
         List<BookedRoom> bookings = getAllBookingsByRoomId(room.getId());
-        List<BookingResponse> bookingInfo = bookings
+        /*List<BookingResponse> bookingInfo = bookings
                 .stream()
                 .map(booking -> new BookingResponse(booking.getBookingId(),
                         booking.getCheckInDate(),
-                        booking.getCheckOutDate(), booking.getBookingConfirmationCode())).toList();
+                        booking.getCheckOutDate(), booking.getBookingConfirmationCode())).toList();*/
         byte[] photoBytes = null;
         Blob photoBlob = room.getPhoto();
         if(photoBytes != null){
@@ -97,10 +99,10 @@ public class RoomController {
                 throw new PhotoRetrievaExcetion("Error retrieving photo");
             }
         }
-        return new RoomResponse(room.getId(),
+         return new RoomResponse(room.getId(),
                 room.getRoomType(),
                 room.getRoomPrice(),
-                room.isBooked(), photoBytes, bookingInfo);
+                room.isBooked(), photoBytes);
     }
 
     private List<BookedRoom> getAllBookingsByRoomId(Long roomId) {
