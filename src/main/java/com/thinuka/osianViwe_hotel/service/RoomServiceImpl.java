@@ -5,7 +5,9 @@ import com.thinuka.osianViwe_hotel.model.Room;
 import com.thinuka.osianViwe_hotel.repository.RoomRepository;
 import com.thinuka.osianViwe_hotel.response.RoomResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,6 +44,14 @@ public class RoomServiceImpl implements IRoomService{
             return photoBlob.getBytes(1,(int)photoBlob.length());
         }
         return null;
+    }
+
+    @Override
+    public void deleteRoom(Long roomId) {
+        Optional<Room> theRoom = roomRepository.findById(roomId);
+        if(theRoom.isPresent()){
+            roomRepository.deleteById(roomId);
+        }
     }
 
     private final RoomRepository roomRepository;

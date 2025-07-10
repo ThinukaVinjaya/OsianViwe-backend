@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,7 +30,7 @@ import java.util.List;
 
 
 
-@CrossOrigin("http://localhost:5174")
+@CrossOrigin("http://localhost:5173")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/rooms")
@@ -44,7 +46,7 @@ public class RoomController {
         @Override
         public void addCorsMappings(CorsRegistry registry) {
             registry.addMapping("/**")
-                    .allowedOrigins("http://localhost:5174")
+                    .allowedOrigins("http://localhost:5173")
                     .allowedMethods("GET", "POST", "PUT", "DELETE");
 
         }
@@ -83,6 +85,13 @@ public class RoomController {
         }
         return  ResponseEntity.ok(roomResponses);
     }
+
+    @DeleteMapping("/delete/room/{roomId}")
+    public ResponseEntity<Void> deleteRoom(@PathVariable Long roomId){
+       roomService.deleteRoom(roomId);
+       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     private RoomResponse getRoomResponse(Room room){
         List<BookedRoom> bookings = getAllBookingsByRoomId(room.getId());
         /*List<BookingResponse> bookingInfo = bookings
