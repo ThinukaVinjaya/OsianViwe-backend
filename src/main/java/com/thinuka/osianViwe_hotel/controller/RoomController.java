@@ -1,6 +1,7 @@
 package com.thinuka.osianViwe_hotel.controller;
 
 import com.thinuka.osianViwe_hotel.exception.PhotoRetrievaExcetion;
+import com.thinuka.osianViwe_hotel.exception.ResourceNotFoundException;
 import com.thinuka.osianViwe_hotel.model.BookedRoom;
 import com.thinuka.osianViwe_hotel.model.Room;
 import com.thinuka.osianViwe_hotel.response.BookingResponse;
@@ -20,14 +21,15 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
+import javax.sql.rowset.serial.SerialBlob;
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-
+import java.util.Optional;
 
 
 @CrossOrigin("http://localhost:5173")
@@ -91,6 +93,64 @@ public class RoomController {
        roomService.deleteRoom(roomId);
        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+   /* @PutMapping("/update/{roomId}")
+    public ResponseEntity<RoomResponse> updateRoom(@PathVariable Long roomId,
+                                                   @RequestParam(required = false) String roomType,
+                                                   @RequestParam(required = false)BigDecimal roomPrice,
+                                                   @RequestParam(required = false)MultipartFile photo){
+       byte[] photoBytes = photo != null && !photo.isEmpty()? photo.getBytes() : roomService.getRoomPhotoByRoomId(roomId);
+       Blob phototBlob = photoBytes != null && photoBytes.length > 0 ? new SerialBlob(photoBytes) : null;
+       Room theRoom = roomService.updateRoom(roomId,roomType, roomPrice, photoBytes);
+       theRoom.setPhoto(phototBlob);
+       RoomResponse roomResponse =  getRoomResponse(theRoom);
+       return ResponseEntity.ok(roomResponse);
+
+    }*/
+
+    @PutMapping("/update/{roomId}")
+    public ResponseEntity<RoomResponse> updateRoom(@PathVariable Long roomId,
+                                                   @RequestParam(required = false) String roomType,
+                                                   @RequestParam(required = false) BigDecimal roomPrice,
+                                                   @RequestParam(required = false) MultipartFile photo) {
+        try {
+            // Handle photo upload or fallback to existing photo
+            byte[] photoBytes;
+            if (photo != null && !photo.isEmpty()) {
+                photoBytes = photo.getBytes();
+            } else {
+                photoBytes = roomService.getRoomPhotoByRoomId(roomId);
+            }
+
+            Blob photoBlob = null;
+            if (photoBytes != null && photoBytes.length > 0) {
+                photoBlob = new SerialBlob(photoBytes);
+            }
+
+            // Update the room using the service
+            Room updatedRoom = roomService.updateRoom(roomId, roomType, roomPrice, photoBytes);
+
+            // Set the photo blob
+            updatedRoom.setPhoto(photoBlob);
+
+            // Convert to DTO response
+            RoomResponse roomResponse = getRoomResponse(updatedRoom);
+
+            return ResponseEntity.ok(roomResponse);
+        } catch (Exception e) {
+            // You may want to define a custom error response or logging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/room/{roomId}")
+   public ResponseEntity<Optional<RoomResponse>> getRoomById(@PathVariable Long roomId){
+        Optional<Room> theRoom  = roomService.getRoomById(roomId);
+        return theRoom.map(room -> {
+            RoomResponse roomResponse =  getRoomResponse(room);
+            return ResponseEntity.ok(Optional.of(roomResponse));
+        }).orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+   }
 
     private RoomResponse getRoomResponse(Room room){
         List<BookedRoom> bookings = getAllBookingsByRoomId(room.getId());
