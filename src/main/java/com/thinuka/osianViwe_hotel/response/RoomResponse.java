@@ -20,26 +20,26 @@ public class RoomResponse {
     private List<BookingResponse>bookings;
 
 
-    public RoomResponse(Long id, String roomType, BigDecimal roomPrice) {
-        this.id = id;
-        this.roomType = roomType;
-        this.roomPrice = roomPrice;
+         public RoomResponse(Long id, String roomType, BigDecimal roomPrice) {
+           this.id = id;
+           this.roomType = roomType;
+           this.roomPrice = roomPrice;
     }
 
-    /*public RoomResponse(Long id, String roomType, BigDecimal roomPrice, boolean isBooked,
+        /*public RoomResponse(Long id, String roomType, BigDecimal roomPrice, boolean isBooked,
                         byte[] photoBytes , List<BookingResponse> bookings) {
+            this.id = id;
+            this.roomType = roomType;
+            this.roomPrice = roomPrice;
+            this.isBooked = isBooked;
+            this.photo = photoBytes != null ? Base64.encodeBase64String(photoBytes) :null;
+            this.bookings = bookings;
+         }*/
+    public RoomResponse(Long id, String roomType, BigDecimal roomPrice, boolean isBooked, String photoBytes) {
         this.id = id;
         this.roomType = roomType;
         this.roomPrice = roomPrice;
         this.isBooked = isBooked;
-        this.photo = photoBytes != null ? Base64.encodeBase64String(photoBytes) :null;
-        this.bookings = bookings;
-    }*/
-    public RoomResponse(Long id, String roomType, BigDecimal roomPrice, boolean isBooked, byte[] photoBytes) {
-        this.id = id;
-        this.roomType = roomType;
-        this.roomPrice = roomPrice;
-        this.isBooked = isBooked;
-        this.photo = photoBytes != null ? Base64.encodeBase64String(photoBytes) : null;
+        this.photo = photoBytes;
     }
 }
