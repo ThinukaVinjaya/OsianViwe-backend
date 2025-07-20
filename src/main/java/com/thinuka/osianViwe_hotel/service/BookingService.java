@@ -2,6 +2,7 @@ package com.thinuka.osianViwe_hotel.service;
 
 
 import com.thinuka.osianViwe_hotel.exception.InvalidBookingRequestException;
+import com.thinuka.osianViwe_hotel.exception.ResourceNotFoundException;
 import com.thinuka.osianViwe_hotel.model.BookedRoom;
 import com.thinuka.osianViwe_hotel.model.Room;
 import com.thinuka.osianViwe_hotel.repository.BookedRoomRepository;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +26,8 @@ public class BookingService implements  IBookingService{
     }
 
 
-
     public List<BookedRoom> getAllBookingsByRoomId(Long roomId) {
+
         return bookingRepository.findByRoomId(roomId);
     }
 
@@ -34,7 +36,7 @@ public class BookingService implements  IBookingService{
        bookingRepository.deleteById(bookingId);
     }
 
-    @Override
+    /*@Override
     public String saveBooking(Long roomId, BookedRoom bookingRequest) {
         if (bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())){
             throw new InvalidBookingRequestException("check-in date must come before check-out date");
@@ -49,7 +51,79 @@ public class BookingService implements  IBookingService{
             throw new InvalidBookingRequestException("Sorry,This room is not available for the selected dates;");
         }
         return bookingRequest.getBookingConfirmationCode();
+    }*/
+
+    @Override
+    public String saveBooking(Long roomId, BookedRoom bookingRequest) {
+        // Validate date logic
+        if (bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())) {
+            throw new InvalidBookingRequestException("Check-in date must come before check-out date.");
+        }
+
+        // Safely get the Room
+        Room room = roomService.getRoomById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + roomId));
+
+        // Check availability
+        List<BookedRoom> existingBookings = room.getBookings();
+        boolean isAvailable = roomIsAvailable(bookingRequest, existingBookings);
+
+        if (!isAvailable) {
+            throw new InvalidBookingRequestException("Sorry, this room is not available for the selected dates.");
+        }
+
+        // Set room to bookingRequest to avoid NullPointerException
+        bookingRequest.setRoom(room);
+
+        // Generate and set unique booking confirmation code
+        String confirmationCode = UUID.randomUUID().toString();
+        bookingRequest.setBookingConfirmationCode(confirmationCode);
+
+        // Associate the booking with the room (if needed)
+        room.addBooking(bookingRequest); // optional if cascade is set up in JPA
+
+        // Save the booking
+        bookingRepository.save(bookingRequest);
+
+        return confirmationCode;
     }
+
+
+   /* @Override
+    public String saveBooking(Long roomId, BookedRoom bookingRequest) {
+        if (bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())) {
+            throw new InvalidBookingRequestException("Check-out date must come after check-in date");
+        }
+
+        Room room = roomService.getRoomById(roomId)
+                .orElseThrow(() -> new InvalidBookingRequestException("Room not found"));
+
+        List<BookedRoom> existingBookings = room.getBookings();
+        boolean roomIsAvailable = roomIsAvailable(bookingRequest, existingBookings);
+
+        if (!roomIsAvailable) {
+            throw new InvalidBookingRequestException("Sorry, this room is not available for the selected dates.");
+        }
+
+        // ✅ Create a new BookedRoom and populate all fields
+        BookedRoom booking = new BookedRoom();
+        booking.setGuestFullName(bookingRequest.getGuestFullName());
+        booking.setGuestEmail(bookingRequest.getGuestEmail());
+        booking.setCheckInDate(bookingRequest.getCheckInDate());
+        booking.setCheckOutDate(bookingRequest.getCheckOutDate());
+        booking.setNumOfAdults(bookingRequest.getNumOfAdults()); // ✅ This is the missing part
+        booking.setNumOfChildren(bookingRequest.getNumOfChildren()); // ✅ This too
+
+
+        // Associate room
+        booking.setRoom(room);
+        room.addBooking(booking);
+
+        bookingRepository.save(booking);
+
+        return booking.getBookingConfirmationCode();
+    }*/
+
 
 
 

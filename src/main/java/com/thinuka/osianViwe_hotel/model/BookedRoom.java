@@ -46,6 +46,8 @@ public class BookedRoom {
     @JoinColumn(name = "id")
     private Room room;
 
+
+
     public void calculateTotalNumberOfGuest(){
         this.totalNumOfGuest = this.NumOfAdults + NumOfChildren;
     }
@@ -64,4 +66,6 @@ public class BookedRoom {
     public void setBookingConfirmationCode(String bookingConfirmationCode) {
         this.bookingConfirmationCode = bookingConfirmationCode;
     }
+
+
 }

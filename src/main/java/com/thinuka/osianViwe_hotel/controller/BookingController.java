@@ -61,7 +61,7 @@ public class BookingController {
      }
     }*/
 
-    @PostMapping("/room/{roomId}/booking")
+    /*@PostMapping("/room/{roomId}/booking")
     public ResponseEntity<?> saveBookings(@PathVariable Long roomId,
                                           @RequestBody BookedRoom bookingRequest) {
         try {
@@ -70,7 +70,27 @@ public class BookingController {
         } catch (InvalidBookingRequestException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }*/
+
+    @PostMapping("/room/{roomId}/booking")
+    public ResponseEntity<?> saveBookings(@PathVariable Long roomId,
+                                          @RequestBody BookedRoom bookingRequest) {
+        try {
+            // Validate basic booking request input here if needed
+
+            // Delegate to service — service will ensure room is set properly
+            String confirmationCode = bookingService.saveBooking(roomId, bookingRequest);
+
+            return ResponseEntity.ok("Room booked successfully! Your booking confirmation code is: " + confirmationCode);
+        } catch (InvalidBookingRequestException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while booking the room.");
+        }
     }
+
 
 
     @DeleteMapping("/booking/{bookingId}/delete")
@@ -78,7 +98,7 @@ public class BookingController {
         bookingService.cancelBooking(bookingId);
      }
 
-    private BookingResponse getBookingResponse(BookedRoom booking) {
+    /*private BookingResponse getBookingResponse(BookedRoom booking) {
         Room theRoom = roomService.getRoomById(booking.getRoom().getId()).get();
         RoomResponse room = new RoomResponse(
                 theRoom.getId(),
@@ -95,6 +115,40 @@ public class BookingController {
                 booking.getNumOfChildren(),
                 booking.getTotalNumOfGuest(),
                 booking.getBookingConfirmationCode(),room);
+    }*/
+
+    private BookingResponse getBookingResponse(BookedRoom booking) {
+        RoomResponse roomResponse;
+
+        if (booking.getRoom() != null) {
+            Long roomId = booking.getRoom().getId();
+
+            Room theRoom = roomService.getRoomById(roomId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + roomId));
+
+            roomResponse = new RoomResponse(
+                    theRoom.getId(),
+                    theRoom.getRoomType(),
+                    theRoom.getRoomPrice());
+        } else {
+            roomResponse = null; // or set a default room response, or throw an exception, based on your needs
+        }
+
+        return new BookingResponse(
+                booking.getBookingId(),
+                booking.getCheckInDate(),
+                booking.getCheckOutDate(),
+                booking.getGuestFullName(),
+                booking.getGuestEmail(),
+                booking.getNumOfAdults(),
+                booking.getNumOfChildren(),
+                booking.getTotalNumOfGuest(),
+                booking.getBookingConfirmationCode(),
+                roomResponse);
     }
+
+
+
+
 }
 

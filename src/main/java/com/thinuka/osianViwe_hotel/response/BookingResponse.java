@@ -17,31 +17,14 @@ import java.time.LocalDate;
 public class BookingResponse {
 
     private Long Id;
-
-
     private LocalDate checkInDate;
-
-
     private  LocalDate checkOutDate;
-
-
     private String guestName;
-
-
     private  String guestEmail;
-
-
     private int NumOfAdults;
-
-
     private int NumOfChildren;
-
-
     private int totalNumOfGuest;
-
-
     private  String bookingConfirmationCode;
-
     private RoomResponse room;
 
     public BookingResponse(Long id, LocalDate checkInDate, LocalDate checkOutDate,
