@@ -53,7 +53,7 @@ public class BookingService implements  IBookingService{
         return bookingRequest.getBookingConfirmationCode();
     }*/
 
-    @Override
+   /* @Override
     public String saveBooking(Long roomId, BookedRoom bookingRequest) {
         // Validate date logic
         if (bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())) {
@@ -86,50 +86,59 @@ public class BookingService implements  IBookingService{
         bookingRepository.save(bookingRequest);
 
         return confirmationCode;
-    }
+    }*/
 
-
-   /* @Override
+    @Override
     public String saveBooking(Long roomId, BookedRoom bookingRequest) {
+        // Validate date logic
         if (bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())) {
-            throw new InvalidBookingRequestException("Check-out date must come after check-in date");
+            throw new InvalidBookingRequestException("Check-in date must come before check-out date.");
         }
 
+        // Safely get the Room
         Room room = roomService.getRoomById(roomId)
-                .orElseThrow(() -> new InvalidBookingRequestException("Room not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + roomId));
 
+        // Check availability
         List<BookedRoom> existingBookings = room.getBookings();
-        boolean roomIsAvailable = roomIsAvailable(bookingRequest, existingBookings);
+        boolean isAvailable = roomIsAvailable(bookingRequest, existingBookings);
 
-        if (!roomIsAvailable) {
+        if (!isAvailable) {
             throw new InvalidBookingRequestException("Sorry, this room is not available for the selected dates.");
         }
 
-        // ✅ Create a new BookedRoom and populate all fields
-        BookedRoom booking = new BookedRoom();
-        booking.setGuestFullName(bookingRequest.getGuestFullName());
-        booking.setGuestEmail(bookingRequest.getGuestEmail());
-        booking.setCheckInDate(bookingRequest.getCheckInDate());
-        booking.setCheckOutDate(bookingRequest.getCheckOutDate());
-        booking.setNumOfAdults(bookingRequest.getNumOfAdults()); // ✅ This is the missing part
-        booking.setNumOfChildren(bookingRequest.getNumOfChildren()); // ✅ This too
+        // Debug: Check if values are received from client
+        System.out.println("Adults: " + bookingRequest.getNumOfAdults());
+        System.out.println("Children: " + bookingRequest.getNumOfChildren());
+
+        // Calculate total guests
+        bookingRequest.calculateTotalNumberOfGuest(); // manually call in case setters weren't used
+
+        // Set room and confirmation code
+        bookingRequest.setRoom(room);
+        String confirmationCode = UUID.randomUUID().toString();
+        bookingRequest.setBookingConfirmationCode(confirmationCode);
+
+        // Optional: associate booking to room
+        room.addBooking(bookingRequest); // if cascade set up
+
+        // Save the booking
+        bookingRepository.save(bookingRequest);
+
+        return confirmationCode;
+    }
 
 
-        // Associate room
-        booking.setRoom(room);
-        room.addBooking(booking);
 
-        bookingRepository.save(booking);
 
-        return booking.getBookingConfirmationCode();
-    }*/
 
 
 
 
     @Override
     public BookedRoom findByBookingConfirmationCode(String confirmationCode) {
-        return bookingRepository.findByBookingConfirmationCode(confirmationCode);
+        return bookingRepository.findByBookingConfirmationCode(confirmationCode)
+                .orElseThrow(() -> new ResourceNotFoundException("No booking found with booking code :"+confirmationCode));
     }
 
 

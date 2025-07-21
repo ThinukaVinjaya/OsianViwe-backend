@@ -49,23 +49,25 @@ public class BookedRoom {
 
 
     public void calculateTotalNumberOfGuest(){
-        this.totalNumOfGuest = this.NumOfAdults + NumOfChildren;
+        this.totalNumOfGuest = this.NumOfAdults + this.NumOfChildren;
     }
 
     public void setNumOfAdults(int numOfAdults) {
-        NumOfAdults = numOfAdults;
+        this.NumOfAdults = numOfAdults;
         calculateTotalNumberOfGuest();
+
 
     }
 
     public void setNumOfChildren(int numOfChildren) {
-        NumOfChildren = numOfChildren;
+        this.NumOfChildren = numOfChildren;
         calculateTotalNumberOfGuest();
     }
 
     public void setBookingConfirmationCode(String bookingConfirmationCode) {
         this.bookingConfirmationCode = bookingConfirmationCode;
     }
+
 
 
 }
