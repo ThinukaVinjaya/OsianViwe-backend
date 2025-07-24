@@ -5,10 +5,13 @@ import com.thinuka.osianViwe_hotel.model.Role;
 import com.thinuka.osianViwe_hotel.model.User;
 import com.thinuka.osianViwe_hotel.service.IRoleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
@@ -20,6 +23,16 @@ import static org.springframework.http.HttpStatus.FOUND;
 public class RoleController {
 
     private  final IRoleService roleService;
+
+    @Configuration
+    public class WebConfig implements WebMvcConfigurer {
+        @Override
+        public void addCorsMappings(CorsRegistry registry) {
+            registry.addMapping("/**")
+                    .allowedOrigins("http://localhost:5173")
+                    .allowedMethods("GET", "POST", "PUT", "DELETE");
+        }
+    }
 
     @GetMapping("/all-roles")
     public ResponseEntity<List<Role>> getAllRoles(){
