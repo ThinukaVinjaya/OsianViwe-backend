@@ -41,57 +41,7 @@ public class BookingService implements  IBookingService{
        bookingRepository.deleteById(bookingId);
     }
 
-    /*@Override
-    public String saveBooking(Long roomId, BookedRoom bookingRequest) {
-        if (bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())){
-            throw new InvalidBookingRequestException("check-in date must come before check-out date");
-        }
-        Room room = roomService.getRoomById(roomId).get();
-        List<BookedRoom> existingbookings = room.getBookings();
-        boolean roomIsAvailable = roomIsAvailable(bookingRequest, existingbookings);
-        if(roomIsAvailable){
-            room.addBooking(bookingRequest);
-            bookingRepository.save(bookingRequest);
-        }else{
-            throw new InvalidBookingRequestException("Sorry,This room is not available for the selected dates;");
-        }
-        return bookingRequest.getBookingConfirmationCode();
-    }*/
 
-   /* @Override
-    public String saveBooking(Long roomId, BookedRoom bookingRequest) {
-        // Validate date logic
-        if (bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())) {
-            throw new InvalidBookingRequestException("Check-in date must come before check-out date.");
-        }
-
-        // Safely get the Room
-        Room room = roomService.getRoomById(roomId)
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + roomId));
-
-        // Check availability
-        List<BookedRoom> existingBookings = room.getBookings();
-        boolean isAvailable = roomIsAvailable(bookingRequest, existingBookings);
-
-        if (!isAvailable) {
-            throw new InvalidBookingRequestException("Sorry, this room is not available for the selected dates.");
-        }
-
-        // Set room to bookingRequest to avoid NullPointerException
-        bookingRequest.setRoom(room);
-
-        // Generate and set unique booking confirmation code
-        String confirmationCode = UUID.randomUUID().toString();
-        bookingRequest.setBookingConfirmationCode(confirmationCode);
-
-        // Associate the booking with the room (if needed)
-        room.addBooking(bookingRequest); // optional if cascade is set up in JPA
-
-        // Save the booking
-        bookingRepository.save(bookingRequest);
-
-        return confirmationCode;
-    }*/
 
     @Override
     public String saveBooking(Long roomId, BookedRoom bookingRequest) {
